@@ -172,6 +172,14 @@ export interface ImpactSimulateResponse {
   disclaimer: string;
 }
 
+export interface ExperimentSummary {
+  experiment_id: string;
+  experiment_type: string;
+  status: string;
+  master_seed: number;
+  created_at: string;
+}
+
 export interface ExperimentResponse {
   experiment_id: string;
   experiment_type: string;
@@ -312,6 +320,11 @@ export const api = {
   async getExperiment(experimentId: string): Promise<ExperimentResponse> {
     const res = await fetch(`${API_BASE}/api/v1/experiments/${experimentId}`);
     return handleResponse<ExperimentResponse>(res);
+  },
+
+  async listExperiments(limit = 20): Promise<ExperimentSummary[]> {
+    const res = await fetch(`${API_BASE}/api/v1/experiments?limit=${limit}`);
+    return handleResponse<ExperimentSummary[]>(res);
   },
 
   async listSessions(limit = 50): Promise<SessionSummary[]> {

@@ -3,12 +3,18 @@
 from __future__ import annotations
 
 import json
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from impactlab.db.models import EventModel, SessionModel
+from impactlab.db.models import (
+    EventModel,
+    ExperimentModel,
+    ExperimentResultModel,
+    SessionModel,
+)
 from impactlab.engine.models import Event
 
 
@@ -131,4 +137,78 @@ def get_session_events(
             "payload": json.loads(m.payload_json),
         }
         for m in models
+    ]
+
+
+def save_experiment(
+    db: Session,
+    experiment_id: str,
+    experiment_type: str,
+    params: dict[str, Any],
+    master_seed: int,
+    runs: int,
+    summary: dict[str, Any],
+    chart_data: list[dict[str, Any]],
+    status: str = "COMPLETED",
+    user_id: str | None = None,
+) -> ExperimentModel:
+    """Persist an experiment result and summary statistics."""
+    now = datetime.now(UTC)
+    exp = ExperimentModel(
+        id=experiment_id,
+        user_id=user_id,
+        type=experiment_type,
+        params_json=json.dumps({**params, "runs": runs}),
+        seed=master_seed,
+        status=status,
+        created_at=now,
+        finished_at=now,
+    )
+    result = ExperimentResultModel(
+        experiment_id=experiment_id,
+        summary_json=json.dumps(summary),
+        charts_json=json.dumps(chart_data),
+    )
+    db.merge(exp)
+    db.merge(result)
+    db.commit()
+    return exp
+
+
+def get_experiment(db: Session, experiment_id: str) -> dict[str, Any] | None:
+    """Retrieve an experiment result from the database."""
+    stmt = (
+        select(ExperimentModel, ExperimentResultModel)
+        .outerjoin(ExperimentResultModel, ExperimentModel.id == ExperimentResultModel.experiment_id)
+        .where(ExperimentModel.id == experiment_id)
+    )
+    row = db.execute(stmt).first()
+    if not row:
+        return None
+    exp, res = row
+    params = json.loads(exp.params_json) if exp.params_json else {}
+    return {
+        "experiment_id": exp.id,
+        "experiment_type": exp.type,
+        "status": exp.status,
+        "master_seed": exp.seed,
+        "runs": params.get("runs", 50),
+        "summary": json.loads(res.summary_json) if res and res.summary_json else {},
+        "chart_data": json.loads(res.charts_json) if res and res.charts_json else [],
+    }
+
+
+def list_experiments(db: Session, limit: int = 20) -> list[dict[str, Any]]:
+    """List recent Monte Carlo experiments."""
+    stmt = select(ExperimentModel).order_by(ExperimentModel.created_at.desc()).limit(limit)
+    rows = db.scalars(stmt).all()
+    return [
+        {
+            "experiment_id": r.id,
+            "experiment_type": r.type,
+            "status": r.status,
+            "master_seed": r.seed,
+            "created_at": r.created_at.isoformat() if r.created_at else "",
+        }
+        for r in rows
     ]
