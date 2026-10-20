@@ -1,0 +1,28 @@
+as_of: "2024-04-01"
+source_note: "Illustrative default rates. Verify current official rates on NSE, BSE, SEBI and your broker's schedule before relying on these numbers."
+
+equity_delivery:
+  brokerage:
+    type: "percent"
+    value: 0.0003  # 0.03% or Rs 20 whichever is lower (sample placeholder)
+    max_cap_paise: 2000  # Rs 20 max
+  stt:
+    buy_pct: 0.001   # 0.1% on delivery buy
+    sell_pct: 0.001  # 0.1% on delivery sell
+  exchange_txn_pct: 0.0000325  # NSE equity txn charge
+  sebi_fee_per_crore_paise: 1000  # Rs 10 per crore
+  stamp_duty_buy_pct: 0.00015     # 0.015% on buy only
+  gst_pct: 0.18  # 18% GST on (brokerage + exchange txn + sebi fee)
+
+equity_intraday:
+  brokerage:
+    type: "percent"
+    value: 0.0003
+    max_cap_paise: 2000
+  stt:
+    buy_pct: 0.0
+    sell_pct: 0.00025  # 0.025% on sell only for intraday
+  exchange_txn_pct: 0.0000325
+  sebi_fee_per_crore_paise: 1000
+  stamp_duty_buy_pct: 0.00003      # 0.003% on buy
+  gst_pct: 0.18
