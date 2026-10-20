@@ -59,6 +59,14 @@ out/
 *.swp
 *.swo
 
+# SQLite & Local DB
+*.db
+*.sqlite
+*.sqlite3
+
+# CSV exports
+*.csv
+
 # OS
 .DS_Store
 Thumbs.db
