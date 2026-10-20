@@ -54,6 +54,15 @@ class SessionResponse(BaseModel):
     created_at: str
 
 
+class SessionSummarySchema(BaseModel):
+    id: str
+    profile: str
+    seed: int
+    status: str
+    created_at: str
+    event_count: int
+
+
 class LevelSchema(BaseModel):
     price: int
     price_formatted: str

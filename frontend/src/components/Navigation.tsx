@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Activity, BarChart3, BookOpen, Layers, ShieldAlert } from "lucide-react";
+import { Activity, BarChart3, BookOpen, History, Layers, ShieldAlert } from "lucide-react";
 
 export function DisclaimerBanner() {
   return (
@@ -21,6 +21,7 @@ export function Navbar() {
   const links = [
     { href: "/simulator", label: "Simulator", icon: Activity },
     { href: "/impact", label: "Impact Analysis", icon: Layers },
+    { href: "/replay", label: "Replay", icon: History },
     { href: "/experiments", label: "Experiments", icon: BarChart3 },
     { href: "/about", label: "Methodology", icon: BookOpen },
   ];

@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from collections import deque
 
-from sortedcontainers import SortedDict
+from sortedcontainers import SortedDict  # type: ignore[import-untyped]
 
 from impactlab.engine.models import BookSnapshot, LevelSummary, Order, Side
 

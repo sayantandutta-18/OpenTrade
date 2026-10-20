@@ -1,8 +1,8 @@
 "use client";
 
 import { ImpactSimulateResponse } from "@/lib/api";
-import { formatBps, formatPrice, formatShares } from "@/lib/format";
-import { CheckCircle2, FileText, Info, Layers, Receipt } from "lucide-react";
+import { formatBps, formatShares } from "@/lib/format";
+import { Info, Layers, Receipt } from "lucide-react";
 
 interface ResultCardProps {
   result: ImpactSimulateResponse;

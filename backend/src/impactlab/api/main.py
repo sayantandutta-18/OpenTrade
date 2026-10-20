@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,6 +13,15 @@ from fastapi.responses import JSONResponse
 from impactlab.api.routes import experiments, impact, profiles, sessions
 from impactlab.api.ws import ws_manager
 from impactlab.config import settings
+from impactlab.db.session import init_db
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    """Initialize database and dependencies on startup."""
+    init_db()
+    yield
+
 
 app = FastAPI(
     title="ImpactLab API",
@@ -17,6 +29,7 @@ app = FastAPI(
     version="0.1.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 # CORS configuration
