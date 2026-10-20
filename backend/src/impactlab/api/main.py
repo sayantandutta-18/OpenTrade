@@ -4,16 +4,19 @@ from __future__ import annotations
 
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from sqlalchemy import text
 
+from impactlab.api.rate_limiter import RateLimitMiddleware
 from impactlab.api.routes import experiments, impact, profiles, sessions
 from impactlab.api.ws import ws_manager
 from impactlab.config import settings
-from impactlab.db.session import init_db
+from impactlab.db.session import engine, init_db
 
 
 @asynccontextmanager
@@ -31,6 +34,9 @@ app = FastAPI(
     redoc_url="/redoc",
     lifespan=lifespan,
 )
+
+# Security and rate limiting middleware
+app.add_middleware(RateLimitMiddleware)
 
 # CORS configuration
 app.add_middleware(
@@ -75,9 +81,21 @@ async def validation_exception_handler(
 # Health check
 @app.get("/health", tags=["system"])
 @app.get(f"{settings.api_v1_prefix}/health", tags=["system"])
-def health() -> dict[str, str]:
-    """Health and liveness endpoint."""
-    return {"status": "ok", "app": settings.app_name}
+def health() -> dict[str, Any]:
+    """Health, liveness, and database connectivity endpoint."""
+    db_status = "ok"
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+    except Exception as e:
+        db_status = f"unhealthy: {e}"
+
+    return {
+        "status": "ok" if db_status == "ok" else "degraded",
+        "app": settings.app_name,
+        "database": db_status,
+        "version": "1.0.0",
+    }
 
 
 # WebSocket stream
